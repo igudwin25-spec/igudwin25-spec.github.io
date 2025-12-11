@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎭 MemeLab — Создавай мемы, зарабатывай награды!</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --primary-dark: #7C3AED;
+            --primary-light: #A78BFA;
+            --secondary: #EC4899;
+            --accent: #06B6D4;
+            --warning: #F59E0B;
+            --success: #10B981;
+            --dark: #0F0F1E;
+            --darker: #0A0A15;
+            --light: #F8FAFC;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass: rgba(255, 255, 255, 0.1);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--light);
+            background: radial-gradient(ellipse at top, #1e1b4b, var(--darker) 70%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Шапка */
+        header {
+            background: rgba(15, 15, 30, 0.95);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--light);
+            font-weight: 500;
+            padding: 8px 0;
+            position: relative;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        nav a:hover {
+            color: var(--primary-light);
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: var(--dark);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.3);
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        /* Генератор мемов */
+        .meme-editor {
+            padding: 30px;
+        }
+        
+        .meme-preview {
+            width: 100%;
+            max-width: 500px;
+            height: 400px;
+            background: #222;
+            border-radius: 10px;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .meme-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .meme-text-top, .meme-text-bottom {
+            position: absolute;
+            width: 90%;
+            text-align: center;
+            font-family: Impact, sans-serif;
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 0 #000,
+                       -2px -2px 0 #000,
+                       2px -2px 0 #000,
+                       -2px 2px 0 #000;
+            word-wrap: break-word;
+        }
+        
+        .meme-text-top {
+            top: 20px;
+        }
+        
+        .meme-text-bottom {
+            bottom: 20px;
+        }
+        
+        .meme-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .meme-templates {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .template-item {
+            cursor: pointer;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: var(--transition);
+        }
+        
+        .template-item:hover, .template-item.active {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .template-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+        
+        .meme-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        /* Тесты */
+        .test-container {
+            padding: 30px;
+        }
+        
+        .question {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: white;
+            text-align: center;
+        }
+        
+        .answers {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .answer-btn {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+        }
+        
+        .answer-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            transform: translateX(10px);
+        }
+        
+        /* Основные стили остаются как были */
+        .ad-leaderboard, .ad-banner, .ad-rectangle, .ad-inline, .ad-sidebar {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            position: relative;
+            border: 2px dashed var(--primary);
+        }
+        
+        .ad-leaderboard { height: 250px; max-width: 970px; margin: 30px auto; }
+        .ad-banner { height: 100px; }
+        .ad-rectangle { height: 250px; }
+        .ad-sidebar { min-height: 600px; }
+        
+        .ad-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .ad-premium {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--warning);
+            color: black;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        
+        /* Остальные стили оставляем как есть... */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .quick-actions {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+        
+        .action-btn {
+            padding: 20px 35px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            border: none;
+        }
+        
+        .action-btn.primary {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-5px);
+        }
+        
+        .activities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .activity-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .activity-header {
+            padding: 25px;
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .activity-content {
+            padding: 25px;
+        }
+        
+        .btn-start {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(45deg, var(--secondary), #DB2777);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+        }
+        
+        /* Дополнительные стили для функционала */
+        .meme-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+        
+        .color-option.active {
+            border-color: white;
+        }
+        
+        .test-progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-laugh-beam"></i>
+                    <span>MemeLab</span>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#home"><i class="fas fa-home"></i> Главная</a></li>
+                        <li><a href="#" onclick="openMemeGenerator()"><i class="fas fa-magic"></i> Мемы</a></li>
+                        <li><a href="#" onclick="openTest()"><i class="fas fa-brain"></i> Тесты</a></li>
+                        <li><a href="#" onclick="openGame()"><i class="fas fa-gamepad"></i> Игры</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Модальное окно генератора мемов -->
+    <div id="memeModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('memeModal')">×</button>
+            <div class="meme-editor">
+                <h2 style="text-align: center; margin-bottom: 30px; color: white;">🎭 Создай свой мем</h2>
+                
+                <div class="meme-preview" id="memePreview">
+                    <img id="memeImage" class="meme-image" src="https://i.imgflip.com/1bij.jpg" alt="Шаблон мема">
+                    <div class="meme-text-top" id="textTop">Введите текст сверху</div>
+                    <div class="meme-text-bottom" id="textBottom">Введите текст снизу</div>
+                </div>
+                
+                <div class="meme-controls">
+                    <div>
+                        <h3 style="color: white; margin-bottom: 15px;">Текст мема</h3>
+                        <input type="text" class="meme-input" id="topText" placeholder="Текст сверху" 
+                               oninput="updateMemeText('top')" value="Введите текст сверху">
+                        <input type="text" class="meme-input" id="bottomText" placeholder="Текст снизу"
+                               oninput="updateMemeText('bottom')" value="Введите текст снизу">
+                        
+                        <h3 style="color: white; margin: 20px 0 10px;">Цвет текста</h3>
+                        <div class="color-picker">
+                            <div class="color-option active" style="background: white;" onclick="changeTextColor('white')"></div>
+                            <div class="color-option" style="background: black;" onclick="changeTextColor('black')"></div>
+                            <div class="color-option" style="background: #FF0000;" onclick="changeTextColor('#FF0000')"></div>
+                            <div class="color-option" style="background: #00FF00;" onclick="changeTextColor('#00FF00')"></div>
+                            <div class="color-option" style="background: #0000FF;" onclick="changeTextColor('#0000FF')"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="color: white; margin-bottom: 15px;">Шаблоны</h3>
+                        <div class="meme-templates">
+                            <div class="template-item active" onclick="changeTemplate('https://i.imgflip.com/1bij.jpg')">
+                                <img src="https://i.imgflip.com/1bij.jpg" alt="Два крысы">
+                            </div>
+                            <div class="template-item" onclick="changeTemplate('https://i.imgflip.com/1h7in3.jpg')">
+                                <img src="https://i.imgflip.com/1h7in3.jpg" alt="Парень смотрит">
+                            </div>
+                            <div class="template-item" onclick="changeTemplate('https://i.imgflip.com/1c1uej.jpg')">
+                                <img src="https://i.imgflip.com/1c1uej.jpg" alt="Жду">
+                            </div>
+                            <div class="template-item" onclick="changeTemplate('https://i.imgflip.com/3vzej.jpg')">
+                                <img src="https://i.imgflip.com/3vzej.jpg" alt="Смеющийся кот">
+                            </div>
+                            <div class="template-item" onclick="changeTemplate('https://i.imgflip.com/30b1gx.jpg')">
+                                <img src="https://i.imgflip.com/30b1gx.jpg" alt="Смена канала">
+                            </div>
+                            <div class="template-item" onclick="changeTemplate('https://i.imgflip.com/1otk96.jpg')">
+                                <img src="https://i.imgflip.com/1otk96.jpg" alt="Хипстер">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <h3 style="color: white; margin-bottom: 10px;">Размер текста</h3>
+                            <input type="range" min="20" max="60" value="36" class="meme-input" 
+                                   oninput="changeTextSize(this.value)" style="padding: 10px;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="meme-actions">
+                    <button class="btn-start" onclick="generateMeme()">
+                        <i class="fas fa-download"></i> Скачать мем
+                    </button>
+                    <button class="btn-start" style="background: linear-gradient(45deg, var(--accent), #0891B2);" 
+                            onclick="shareMeme()">
+                        <i class="fas fa-share"></i> Поделиться
+                    </button>
+                    <button class="btn-start" style="background: linear-gradient(45deg, var(--warning), #D97706);" 
+                            onclick="addCoins(50)">
+                        <i class="fas fa-coins"></i> Получить 50 монет
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно теста -->
+    <div id="testModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('testModal')">×</button>
+            <div class="test-container">
+                <h2 style="text-align: center; margin-bottom: 30px; color: white;">🧠 Тест: Какой вы тип мемера?</h2>
+                
+                <div class="test-progress">
+                    <div class="progress-bar" id="testProgress" style="width: 0%"></div>
+                </div>
+                
+                <div id="testContent">
+                    <div class="question" id="question">Загрузка вопроса...</div>
+                    <div class="answers" id="answers"></div>
+                </div>
+                
+                <div id="testResult" style="display: none; text-align: center;">
+                    <h2 style="color: white; margin-bottom: 20px;">Ваш результат:</h2>
+                    <div id="resultTitle" style="font-size: 2rem; color: var(--primary); margin-bottom: 20px;"></div>
+                    <div id="resultDescription" style="color: #CBD5E1; margin-bottom: 30px;"></div>
+                    <button class="btn-start" onclick="restartTest()">
+                        <i class="fas fa-redo"></i> Пройти ещё раз
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно игры -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('gameModal')">×</button>
+            <div style="padding: 30px; text-align: center;">
+                <h2 style="color: white; margin-bottom: 30px;">🎮 Угадай мем по фрагменту</h2>
+                
+                <div style="background: #222; border-radius: 10px; padding: 20px; margin-bottom: 30px;">
+                    <img id="memeFragment" src="" alt="Фрагмент мема" 
+                         style="width: 300px; height: 200px; object-fit: cover; filter: blur(10px); border-radius: 10px;">
+                </div>
+                
+                <div id="gameOptions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+                    <!-- Варианты ответов будут добавляться через JS -->
+                </div>
+                
+                <div style="display: flex; justify-content: center; gap: 20px;">
+                    <div style="color: white; font-size: 1.2rem;">
+                        <i class="fas fa-coins"></i> Монеты: <span id="gameCoins">100</span>
+                    </div>
+                    <div style="color: white; font-size: 1.2rem;">
+                        <i class="fas fa-star"></i> Очки: <span id="gameScore">0</span>
+                    </div>
+                </div>
+                
+                <button class="btn-start" style="margin-top: 30px;" onclick="nextMemeGame()">
+                    <i class="fas fa-forward"></i> Следующий мем
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент сайта -->
+    <div class="container">
+        <!-- Главный баннер -->
+        <div class="ad-leaderboard">
+            <div class="ad-premium">РЕКЛАМА 970×250</div>
+            <div class="ad-label">$699/месяц</div>
+            <div style="text-align: center; padding: 20px;">
+                <h3 style="color: white; margin-bottom: 15px;">Ваш бренд здесь!</h3>
+                <p style="color: #CBD5E1; margin-bottom: 20px;">50,000+ показов в день</p>
+                <a href="https://t.me/Privet_perchik" target="_blank" 
+                   style="display: inline-block; background: var(--primary); color: white; padding: 12px 25px; border-radius: 50px; text-decoration: none; font-weight: 600;">
+                    <i class="fab fa-telegram"></i> @Privet_perchik
+                </a>
+            </div>
+        </div>
+
+        <section class="hero" id="home">
+            <h1>Создавай. Смейся. Зарабатывай.</h1>
+            <p style="font-size: 1.3rem; color: #CBD5E1; max-width: 800px; margin: 0 auto 50px;">
+                Рабочий генератор мемов, тесты и игры! Создавайте контент, проходите тесты и зарабатывайте монеты.
+            </p>
+            
+            <div class="quick-actions">
+                <button class="action-btn primary" onclick="openMemeGenerator()">
+                    <i class="fas fa-plus-circle"></i> Создать мем
+                </button>
+                <button class="action-btn secondary" onclick="openTest()">
+                    <i class="fas fa-play-circle"></i> Пройти тест
+                </button>
+                <button class="action-btn" style="background: linear-gradient(45deg, var(--accent), #0891B2); color: white;" 
+                        onclick="openGame()">
+                    <i class="fas fa-dice"></i> Играть
+                </button>
+            </div>
+        </section>
+
+        <!-- Баннер -->
+        <div class="ad-banner">
+            <div class="ad-premium">728×90</div>
+            <div class="ad-label">$299/месяц</div>
+            <div style="text-align: center;">
+                <span style="font-size: 1.2rem; font-weight: 600; color: white;">Место для вашей рекламы</span>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div style="display: grid; grid-template-columns: 1fr 350px; gap: 40px; margin: 50px 0;">
+            <main>
+                <h2 style="font-size: 2.5rem; margin-bottom: 40px; color: white;">🎯 Популярные инструменты</h2>
+                
+                <div class="activities-grid">
+                    <!-- Генератор мемов -->
+                    <div class="activity-card">
+                        <div class="activity-header">
+                            <i class="fas fa-magic" style="font-size: 2.5rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.5rem;">Генератор мемов</h3>
+                                <div style="display: flex; gap: 15px; font-size: 0.9rem;">
+                                    <span><i class="fas fa-users"></i> 45,231 использовали</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="activity-content">
+                            <p style="color: #CBD5E1; margin-bottom: 25px;">Создавайте смешные мемы из шаблонов. Добавляйте текст, меняйте цвета.</p>
+                            <button class="btn-start" onclick="openMemeGenerator()">
+                                <i class="fas fa-play"></i> Создать мем
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Тест дня -->
+                    <div class="activity-card">
+                        <div class="activity-header" style="background: linear-gradient(90deg, var(--secondary), #DB2777);">
+                            <i class="fas fa-star" style="font-size: 2.5rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.5rem;">Тест дня</h3>
+                                <div style="display: flex; gap: 15px; font-size: 0.9rem;">
+                                    <span><i class="fas fa-gem"></i> 150 монет</span>
+                                    <span><i class="fas fa-clock"></i> 5 мин</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="activity-content">
+                            <p style="color: #CBD5E1; margin-bottom: 25px;">"Какой вы тип мемера?" Пройдите и поделитесь результатом!</p>
+                            <button class="btn-start" onclick="openTest()">
+                                <i class="fas fa-play"></i> Пройти тест
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Рекламный блок -->
+                    <div class="ad-rectangle">
+                        <div class="ad-premium" style="background: linear-gradient(45deg, var(--success), #059669);">300×250</div>
+                        <div class="ad-label">$249/месяц</div>
+                        <div style="text-align: center; padding: 20px;">
+                            <p style="color: white;">Идеальное место для рекламы</p>
+                            <small style="color: #CBD5E1;">Контакты: @Privet_perchik</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Встроенная реклама -->
+                <div class="ad-inline">
+                    <div class="ad-premium">НАТИВНАЯ РЕКЛАМА</div>
+                    <div class="ad-label">$399/месяц</div>
+                    <div style="padding: 20px;">
+                        <h3 style="color: white; margin-bottom: 15px;">Разместите свой бренд здесь</h3>
+                        <p style="color: #CBD5E1; margin-bottom: 20px;">Интеграция в контент для максимального вовлечения.</p>
+                        <a href="https://t.me/Privet_perchik" target="_blank" 
+                           style="display: inline-block; background: #0088cc; color: white; padding: 10px 20px; border-radius: 50px; text-decoration: none;">
+                            <i class="fab fa-telegram"></i> Обсудить
+                        </a>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Сайдбар -->
+            <aside>
+                <!-- Большая реклама -->
+                <div class="ad-sidebar">
+                    <div class="ad-premium" style="background: linear-gradient(45deg, var(--primary), var(--primary-dark));">300×600</div>
+                    <div class="ad-label">$549/месяц</div>
+                    <div style="text-align: center; padding: 20px;">
+                        <h3 style="color: white; margin-bottom: 15px;">Премиум размещение</h3>
+                        <p style="color: #CBD5E1;">Боковой блок с максимальной видимостью</p>
+                    </div>
+                </div>
+                
+                <!-- Виджет -->
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 25px; margin-bottom: 30px;">
+                    <h3 style="color: white; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-chart-line"></i> Статистика
+                    </h3>
+                    <div style="color: #CBD5E1;">
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <span>Монет заработано</span>
+                            <span style="color: var(--warning); font-weight: 700;" id="totalCoins">1,250</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <span>Мемов создано</span>
+                            <span style="color: var(--primary); font-weight: 700;" id="memesCreated">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <span>Тестов пройдено</span>
+                            <span style="color: var(--secondary); font-weight: 700;" id="testsTaken">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                            <span>Игр сыграно</span>
+                            <span style="color: var(--accent); font-weight: 700;" id="gamesPlayed">0</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        
+        <!-- Финальный баннер -->
+        <div class="ad-leaderboard" style="height: 120px; margin: 60px auto;">
+            <div class="ad-premium" style="background: linear-gradient(45deg, var(--accent), #0891B2);">ФИНАЛЬНЫЙ ПРИЗЫВ</div>
+            <div class="ad-label">$399/месяц</div>
+            <div style="text-align: center; padding: 20px;">
+                <span style="font-size: 1.4rem; font-weight: 700; color: white;">Последний шанс заказать рекламу</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let userCoins = 1250;
+        let memesCreated = 0;
+        let testsTaken = 0;
+        let gamesPlayed = 0;
+        let currentTextColor = 'white';
+        let currentTextSize = 36;
+        
+        // Модальные окна
+        function openMemeGenerator() {
+            document.getElementById('memeModal').style.display = 'flex';
+            updateStats();
+        }
+        
+        function openTest() {
+            document.getElementById('testModal').style.display = 'flex';
+            startTest();
+        }
+        
+        function openGame() {
+            document.getElementById('gameModal').style.display = 'flex';
+            startGame();
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            document.getElementById('totalCoins').textContent = userCoins.toLocaleString();
+            document.getElementById('memesCreated').textContent = memesCreated;
+            document.getElementById('testsTaken').textContent = testsTaken;
+            document.getElementById('gamesPlayed').textContent = gamesPlayed;
+        }
+        
+        // Генератор мемов
+        function updateMemeText(position) {
+            const text = position === 'top' 
+                ? document.getElementById('topText').value
+                : document.getElementById('bottomText').value;
+            
+            document.getElementById('text' + (position === 'top' ? 'Top' : 'Bottom')).textContent = text || ' ';
+        }
+        
+        function changeTemplate(imageUrl) {
+            document.getElementById('memeImage').src = imageUrl;
+            
+            // Обновляем активный шаблон
+            document.querySelectorAll('.template-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.template-item').classList.add('active');
+        }
+        
+        function changeTextColor(color) {
+            currentTextColor = color;
+            document.getElementById('textTop').style.color = color;
+            document.getElementById('textBottom').style.color = color;
+            
+            // Обновляем активный цвет
+            document.querySelectorAll('.color-option').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        function changeTextSize(size) {
+            currentTextSize = size;
+            document.getElementById('textTop').style.fontSize = size + 'px';
+            document.getElementById('textBottom').style.fontSize = size + 'px';
+        }
+        
+        function generateMeme() {
+            // В реальном приложении здесь был бы код для генерации изображения
+            alert('Мем сохранён! +50 монет');
+            addCoins(50);
+            memesCreated++;
+            updateStats();
+        }
+        
+        function shareMeme() {
+            alert('Мем скопирован в буфер обмена! Поделитесь с друзьями!');
+            addCoins(25);
+        }
+        
+        function addCoins(amount) {
+            userCoins += amount;
+            updateStats();
+            
+            // Анимация
+            const coinElement = document.querySelector('.coin-balance');
+            coinElement.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                coinElement.style.transform = 'scale(1)';
+            }, 300);
+        }
+        
+        // Тест
+        let testData = {
+            currentQuestion: 0,
+            score: 0,
+            questions: [
+                {
+                    question: "Какой мем вы создадите первым?",
+                    answers: [
+                        { text: "Про котиков", value: 1 },
+                        { text: "Про ИИ и технологии", value: 2 },
+                        { text: "Про игры", value: 3 },
+                        { text: "Про жизнь и философию", value: 4 }
+                    ]
+                },
+                {
+                    question: "Как часто вы смотрите мемы?",
+                    answers: [
+                        { text: "Каждый час", value: 4 },
+                        { text: "Несколько раз в день", value: 3 },
+                        { text: "Раз в день", value: 2 },
+                        { text: "Иногда", value: 1 }
+                    ]
+                },
+                {
+                    question: "Куда вы обычно постите мемы?",
+                    answers: [
+                        { text: "Telegram/WhatsApp", value: 1 },
+                        { text: "ВКонтакте", value: 2 },
+                        { text: "Instagram", value: 3 },
+                        { text: "Никуда, только сохраняю", value: 4 }
+                    ]
+                }
+            ],
+            results: [
+                {
+                    title: "🎯 Мем-Профи",
+                    description: "Вы знаток мем-культуры! Создаёте самые трендовые мемы и всегда в курсе новинок.",
+                    minScore: 10,
+                    maxScore: 12
+                },
+                {
+                    title: "😎 Крутой Мемер",
+                    description: "Вы создаёте качественный контент! Ваши мемы всегда попадают в точку.",
+                    minScore: 7,
+                    maxScore: 9
+                },
+                {
+                    title: "👍 Начинающий",
+                    description: "Вы только начинаете свой путь в мире мемов! Продолжайте в том же духе!",
+                    minScore: 3,
+                    maxScore: 6
+                }
+            ]
+        };
+        
+        function startTest() {
+            testData.currentQuestion = 0;
+            testData.score = 0;
+            document.getElementById('testResult').style.display = 'none';
+            document.getElementById('testContent').style.display = 'block';
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            const question = testData.questions[testData.currentQuestion];
+            document.getElementById('question').textContent = question.question;
+            
+            const answersContainer = document.getElementById('answers');
+            answersContainer.innerHTML = '';
+            
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = answer.text;
+                button.onclick = () => selectAnswer(answer.value);
+                answersContainer.appendChild(button);
+            });
+            
+            // Обновляем прогресс
+            const progress = ((testData.currentQuestion + 1) / testData.questions.length) * 100;
+            document.getElementById('testProgress').style.width = progress + '%';
+        }
+        
+        function selectAnswer(value) {
+            testData.score += value;
+            testData.currentQuestion++;
+            
+            if (testData.currentQuestion < testData.questions.length) {
+                showQuestion();
+            } else {
+                showTestResult();
+            }
+        }
+        
+        function showTestResult() {
+            document.getElementById('testContent').style.display = 'none';
+            document.getElementById('testResult').style.display = 'block';
+            
+            const result = testData.results.find(r => 
+                testData.score >= r.minScore && testData.score <= r.maxScore
+            ) || testData.results[1];
+            
+            document.getElementById('resultTitle').textContent = result.title;
+            document.getElementById('resultDescription').textContent = result.description;
+            
+            // Начисляем монеты
+            const coinsEarned = 100 + testData.score * 10;
+            addCoins(coinsEarned);
+            testsTaken++;
+            updateStats();
+        }
+        
+        function restartTest() {
+            startTest();
+        }
+        
+        // Игра
+        const memeGameData = {
+            currentRound: 0,
+            score: 0,
+            coins: 100,
+            memes: [
+                {
+                    fragment: "https://i.imgflip.com/1bij.jpg",
+                    full: "Два крысы",
+                    options: ["Два крысы", "Смеющийся кот", "Жду", "Парень смотрит"]
+                },
+                {
+                    fragment: "https://i.imgflip.com/1h7in3.jpg",
+                    full: "Парень смотрит",
+                    options: ["Два крысы", "Смеющийся кот", "Жду", "Парень смотрит"]
+                },
+                {
+                    fragment: "https://i.imgflip.com/1c1uej.jpg",
+                    full: "Жду",
+                    options: ["Два крысы", "Смеющийся кот", "Жду", "Парень смоттр"]
+                }
+            ]
+        };
+        
+        function startGame() {
+            memeGameData.currentRound = 0;
+            memeGameData.score = 0;
+            document.getElementById('gameScore').textContent = 0;
+            document.getElementById('gameCoins').textContent = memeGameData.coins;
+            nextMemeGame();
+        }
+        
+        function nextMemeGame() {
+            if (memeGameData.currentRound >= memeGameData.memes.length) {
+                alert(`Игра окончена! Вы заработали ${memeGameData.score} очков!`);
+                gamesPlayed++;
+                updateStats();
+                return;
+            }
+            
+            const meme = memeGameData.memes[memeGameData.currentRound];
+            document.getElementById('memeFragment').src = meme.fragment;
+            
+            // Перемешиваем варианты ответов
+            const shuffledOptions = [...meme.options].sort(() => Math.random() - 0.5);
+            
+            const optionsContainer = document.getElementById('gameOptions');
+            optionsContainer.innerHTML = '';
+            
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = option;
+                button.onclick = () => checkGameAnswer(option, meme.full);
+                optionsContainer.appendChild(button);
+            });
+            
+            memeGameData.currentRound++;
+        }
+        
+        function checkGameAnswer(selected, correct) {
+            if (selected === correct) {
+                memeGameData.score += 100;
+                memeGameData.coins += 50;
+                alert('Правильно! +100 очков, +50 монет');
+            } else {
+                memeGameData.coins -= 20;
+                alert(`Неправильно! Правильный ответ: ${correct}. -20 монет`);
+            }
+            
+            document.getElementById('gameScore').textContent = memeGameData.score;
+            document.getElementById('gameCoins').textContent = memeGameData.coins;
+            
+            // Обновляем общее количество монет
+            if (selected === correct) {
+                userCoins += 50;
+            } else {
+                userCoins = Math.max(0, userCoins - 20);
+            }
+            updateStats();
+            
+            setTimeout(nextMemeGame, 1000);
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            
+            // Закрытие модальных окон при клике вне
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
